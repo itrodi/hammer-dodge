@@ -20,13 +20,13 @@ import { base } from 'viem/chains';
       // Load audio resources
       function loadAudio() {
         // Background music (you can replace this with your own music URL)
-        AUDIO.backgroundMusic = new Audio("https://cdn.freesound.org/previews/560/560269_12131200-lq.mp3");
+        AUDIO.backgroundMusic = new Audio("https://lqy3lriiybxcejon.public.blob.vercel-storage.com/e2GNOD2X263E/game-music-loop-7-145285-2wYczgdfpbrRXINIpQJKXphiRz3cI5.mpeg?8YQj");
         AUDIO.backgroundMusic.loop = true;
         AUDIO.backgroundMusic.volume = 0.4;
         
         // Sound effects from the original game (you can replace these with your own SFX URLs)
-        AUDIO.hammer = new Audio("https://lqy3lriiybxcejon.public.blob.vercel-storage.com/e2GNOD2X263E/metal-hit-94-200422-BJS84Lq2gne3CYahSXtphOnKM4ga63.mpeg?23Km");
-        AUDIO.powerUp = new Audio("https://lqy3lriiybxcejon.public.blob.vercel-storage.com/e2GNOD2X263E/metal-hit-94-200422-BJS84Lq2gne3CYahSXtphOnKM4ga63.mpeg?23Km");
+        AUDIO.hammer = new Audio("https://lcejon.public.blob.vercel-storage.com/e2GNOD2X263E/metal-hit-94-200422-BJS84Lq2gne3CYahSXtphOnKM4ga63.mpeg?23Km");
+        AUDIO.powerUp = new Audio("https://lqy3lriiybxcejon.public.blob.vercel-storage.com/e2GNOD2X263E/powerup-41954-cuFsLCPk9MZlX6jsCjvKLepLjZR1Xj.mpeg?hsIC");
         AUDIO.hit = new Audio("https://lqy3lriiybxcejon.public.blob.vercel-storage.com/e2GNOD2X263E/metal-hit-94-200422-BJS84Lq2gne3CYahSXtphOnKM4ga63.mpeg?23Km");
         AUDIO.gameOver = new Audio("https://lqy3lriiybxcejon.public.blob.vercel-storage.com/e2GNOD2X263E/metal-hit-94-200422-BJS84Lq2gne3CYahSXtphOnKM4ga63.mpeg?23Km");
         AUDIO.milestone = new Audio("https://cdn.freesound.org/previews/270/270404_5123851-lq.mp3");
@@ -90,8 +90,8 @@ import { base } from 'viem/chains';
         // Define milestones
         milestones: {
           50: {
-            name: "Bronze Hammer",
-            symbol: "BRHM",
+            name: "Ruby Hammer",
+            symbol: "RBHM",
             uri: "ipfs://QmXoypizjW3WknFiJnKLwHCnL72vedxjQkDDP1mXWo6uco/bronze-hammer.json"
           },
           100: {
