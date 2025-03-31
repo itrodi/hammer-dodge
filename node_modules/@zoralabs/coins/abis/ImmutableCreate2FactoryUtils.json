@@ -1,0 +1,15 @@
+[
+  {
+    "type": "function",
+    "name": "IMMUTABLE_CREATE2_FACTORY",
+    "inputs": [],
+    "outputs": [
+      {
+        "name": "",
+        "type": "IImmutableCreate2Factory",
+        "internalType": "contract IImmutableCreate2Factory"
+      }
+    ],
+    "stateMutability": "view"
+  }
+]

@@ -1,0 +1,15 @@
+[
+  {
+    "type": "function",
+    "name": "contractVersion",
+    "inputs": [],
+    "outputs": [
+      {
+        "name": "",
+        "type": "string",
+        "internalType": "string"
+      }
+    ],
+    "stateMutability": "pure"
+  }
+]
