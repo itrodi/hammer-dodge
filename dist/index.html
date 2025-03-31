@@ -1,0 +1,698 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>Hammer Dodge</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        touch-action: manipulation;
+        -webkit-touch-callout: none;
+        -webkit-user-select: none;
+        user-select: none;
+        font-family: "Courier New", monospace;
+      }
+
+      body {
+        overflow: hidden;
+        background-color: #181818;
+        height: 100vh;
+        width: 100vw;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+
+      #game-container {
+        position: relative;
+        width: 100%;
+        height: 100%;
+        max-width: 500px;
+        max-height: 800px;
+        overflow: hidden;
+        background-color: #9bbc0f; /* Classic Game Boy green */
+      }
+
+      #game-screen {
+        width: 100%;
+        height: 100%;
+        position: relative;
+        overflow: hidden;
+        background-color: #9bbc0f;
+      }
+
+      #score-container {
+        position: absolute;
+        top: 10px;
+        left: 10px;
+        z-index: 10;
+        font-size: 16px;
+        color: #0f380f; /* Dark green */
+        font-weight: bold;
+      }
+
+      #wallet-status {
+        position: absolute;
+        top: 30px;
+        left: 10px;
+        z-index: 10;
+        font-size: 12px;
+        color: #0f380f;
+      }
+
+      #start-screen {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: #9bbc0f;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        z-index: 100;
+      }
+
+      .title {
+        font-size: 24px;
+        font-weight: bold;
+        color: #0f380f;
+        margin-bottom: 20px;
+        text-align: center;
+        animation: pulse 1.5s infinite;
+      }
+
+      @keyframes pulse {
+        0% {
+          transform: scale(1);
+        }
+        50% {
+          transform: scale(1.05);
+        }
+        100% {
+          transform: scale(1);
+        }
+      }
+
+      .button {
+        padding: 10px 20px;
+        font-size: 16px;
+        font-weight: bold;
+        background-color: #0f380f;
+        color: #9bbc0f;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        margin-top: 20px;
+      }
+
+      .button:active {
+        transform: scale(0.95);
+      }
+
+      #player {
+        position: absolute;
+        width: 24px;
+        height: 24px;
+        background-color: #0f380f;
+        border-radius: 0;
+        bottom: 70px;
+        left: 50%;
+        transform: translateX(-50%);
+      }
+
+      .enemy {
+        position: absolute;
+        width: 16px;
+        height: 16px;
+        background-color: #0f380f;
+        border-radius: 0%;
+        top: 40px;
+      }
+
+      .hammer {
+        position: absolute;
+        width: 12px;
+        height: 20px;
+        background-color: #0f380f;
+        border-radius: 0;
+        animation: rotate 0.5s infinite linear;
+      }
+
+      @keyframes rotate {
+        0% {
+          transform: rotate(0deg);
+        }
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+
+      .hammer::before {
+        content: "";
+        position: absolute;
+        width: 20px;
+        height: 12px;
+        background-color: #0f380f;
+        top: -6px;
+        left: -4px;
+      }
+
+      .power-up {
+        position: absolute;
+        width: 16px;
+        height: 16px;
+        background-color: #306230;
+        border-radius: 50%;
+        animation: pulsePowerUp 0.8s infinite alternate;
+      }
+
+      @keyframes pulsePowerUp {
+        0% {
+          transform: scale(1);
+          opacity: 0.8;
+        }
+        100% {
+          transform: scale(1.2);
+          opacity: 1;
+        }
+      }
+
+      .ground {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        height: 50px;
+        background-color: #306230;
+      }
+
+      .platform {
+        position: absolute;
+        top: 100px;
+        left: 0;
+        width: 100%;
+        height: 20px;
+        background-color: #306230;
+      }
+
+      .fence {
+        position: absolute;
+        top: 80px;
+        left: 0;
+        width: 100%;
+        height: 20px;
+        display: flex;
+        justify-content: space-around;
+      }
+
+      .fence-post {
+        width: 8px;
+        height: 20px;
+        background-color: #0f380f;
+      }
+
+      .cloud {
+        position: absolute;
+        width: 40px;
+        height: 20px;
+        background-color: #8bac0f;
+        border-radius: 10px;
+        top: 30px;
+      }
+
+      .shield {
+        position: absolute;
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        border: 3px solid #0066cc;
+        top: -3px;
+        left: -3px;
+        opacity: 0.7;
+        display: none;
+        animation: shieldPulse 1s infinite alternate;
+      }
+
+      @keyframes shieldPulse {
+        0% {
+          box-shadow: 0 0 5px #0066cc;
+        }
+        100% {
+          box-shadow: 0 0 15px #0066cc;
+        }
+      }
+
+      #life-container {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        z-index: 10;
+        display: flex;
+      }
+
+      .life {
+        width: 10px;
+        height: 10px;
+        background-color: #0f380f;
+        margin-left: 5px;
+      }
+
+      .loading-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: #9bbc0f;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        z-index: 200;
+      }
+
+      .loading-text {
+        font-size: 18px;
+        font-weight: bold;
+        color: #0f380f;
+        margin-top: 20px;
+      }
+
+      .spinner {
+        width: 40px;
+        height: 40px;
+        border: 4px solid #8bac0f;
+        border-radius: 50%;
+        border-top-color: #0f380f;
+        animation: spinner 1s linear infinite;
+      }
+
+      @keyframes spinner {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+
+      .game-boy-screen {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        border: 10px solid #0f380f;
+        pointer-events: none;
+        z-index: 5;
+        box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.3);
+      }
+
+      .pixel-filter {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        background-image: linear-gradient(rgba(0, 0, 0, 0.05) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(0, 0, 0, 0.05) 1px, transparent 1px);
+        background-size: 2px 2px;
+        pointer-events: none;
+        z-index: 4;
+      }
+
+      .flash {
+        animation: flashScreen 0.2s;
+      }
+
+      @keyframes flashScreen {
+        0% {
+          background-color: #9bbc0f;
+        }
+        50% {
+          background-color: #0f380f;
+        }
+        100% {
+          background-color: #9bbc0f;
+        }
+      }
+
+      /* Modal Styles */
+      .modal-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.7);
+        display: none;
+        justify-content: center;
+        align-items: center;
+        z-index: 150;
+      }
+
+      .modal {
+        width: 90%;
+        max-width: 300px;
+        background-color: #9bbc0f;
+        border: 5px solid #0f380f;
+        padding: 20px;
+        position: relative;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+      }
+
+      .modal-title {
+        font-size: 18px;
+        font-weight: bold;
+        color: #0f380f;
+        text-align: center;
+        margin-bottom: 15px;
+      }
+
+      .modal-content {
+        font-size: 14px;
+        color: #0f380f;
+        margin-bottom: 15px;
+      }
+
+      .modal-buttons {
+        display: flex;
+        justify-content: center;
+        gap: 10px;
+      }
+
+      .token-info {
+        background-color: #8bac0f;
+        padding: 10px;
+        margin: 10px 0;
+        border-radius: 5px;
+        font-size: 12px;
+      }
+
+      .token-address {
+        word-break: break-all;
+        font-family: monospace;
+        margin-top: 5px;
+        padding: 5px;
+        background-color: #306230;
+        color: #fff;
+        border-radius: 3px;
+        cursor: pointer;
+      }
+
+      #instructions-screen {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: #9bbc0f;
+        display: none;
+        flex-direction: column;
+        justify-content: flex-start;
+        align-items: center;
+        z-index: 100;
+        overflow-y: auto;
+        padding: 20px;
+      }
+
+      .instruction-title {
+        font-size: 20px;
+        font-weight: bold;
+        color: #0f380f;
+        margin-bottom: 20px;
+        text-align: center;
+      }
+
+      .instruction-section {
+        margin-bottom: 15px;
+        width: 100%;
+        max-width: 400px;
+      }
+
+      .instruction-heading {
+        font-size: 16px;
+        font-weight: bold;
+        color: #0f380f;
+        margin-bottom: 5px;
+      }
+
+      .instruction-text {
+        font-size: 14px;
+        color: #0f380f;
+        margin-bottom: 10px;
+      }
+
+      .controls-image {
+        width: 100%;
+        max-width: 280px;
+        height: 100px;
+        margin: 10px auto;
+        background-color: #8bac0f;
+        display: flex;
+        justify-content: space-around;
+        align-items: center;
+        border: 2px solid #0f380f;
+      }
+
+      .control-key {
+        width: 40px;
+        height: 40px;
+        background-color: #0f380f;
+        color: #9bbc0f;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-weight: bold;
+      }
+
+      .milestone-list {
+        width: 100%;
+        max-width: 300px;
+        margin: 10px auto;
+      }
+
+      .milestone-item {
+        background-color: #8bac0f;
+        padding: 5px 10px;
+        margin-bottom: 5px;
+        border-radius: 3px;
+        font-size: 12px;
+        display: flex;
+        justify-content: space-between;
+      }
+
+      #game-over-screen {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.8);
+        display: none;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        z-index: 150;
+      }
+
+      .game-over-title {
+        font-size: 32px;
+        font-weight: bold;
+        color: #9bbc0f;
+        margin-bottom: 20px;
+        text-align: center;
+        animation: pulse 1.5s infinite;
+      }
+
+      .final-score {
+        font-size: 24px;
+        color: #9bbc0f;
+        margin-bottom: 30px;
+      }
+
+      #audio-controls {
+        position: absolute;
+        top: 10px;
+        right: 60px;
+        z-index: 10;
+        display: flex;
+        gap: 5px;
+      }
+
+      .audio-button {
+        width: 20px;
+        height: 20px;
+        background-color: #0f380f;
+        color: #9bbc0f;
+        border: none;
+        border-radius: 3px;
+        cursor: pointer;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-size: 10px;
+      }
+
+      /* For small screens */
+      @media (max-height: 600px) {
+        #player {
+          bottom: 50px;
+        }
+        .ground {
+          height: 30px;
+        }
+      }
+    </style>
+    <script type="module" crossorigin src="/assets/index-Djqavrq_.js"></script>
+  </head>
+  <body>
+    <div id="game-container">
+      <div id="game-screen">
+        <div class="game-boy-screen"></div>
+        <div class="pixel-filter"></div>
+        <div id="audio-controls">
+          <button class="audio-button" id="music-toggle">♫</button>
+          <button class="audio-button" id="sfx-toggle">🔊</button>
+        </div>
+        <div id="score-container">SCORE: 0</div>
+        <div id="wallet-status">WALLET: NOT CONNECTED</div>
+        <div id="life-container">
+          <div class="life"></div>
+          <div class="life"></div>
+          <div class="life"></div>
+        </div>
+
+        <div class="platform"></div>
+        <div class="fence" id="fence">
+          <!-- Fence posts will be added dynamically -->
+        </div>
+        <div class="ground"></div>
+
+        <div id="player">
+          <div class="shield" id="shield"></div>
+        </div>
+      </div>
+
+      <div id="start-screen">
+        <div class="title">HAMMER<br />DODGE</div>
+        <div style="color: #0f380f; text-align: center; margin: 0 20px">
+          Dodge hammers and earn tokens by reaching milestones!
+        </div>
+        <button id="connect-wallet-button" class="button">CONNECT WALLET</button>
+        <button id="instructions-button" class="button">INSTRUCTIONS</button>
+        <button id="start-button" class="button">START GAME</button>
+      </div>
+
+      <div id="instructions-screen">
+        <div class="instruction-title">HOW TO PLAY</div>
+        
+        <div class="instruction-section">
+          <div class="instruction-heading">OBJECTIVE</div>
+          <div class="instruction-text">
+            Dodge the falling hammers for as long as possible. Each hammer successfully avoided adds to your score.
+          </div>
+        </div>
+        
+        <div class="instruction-section">
+          <div class="instruction-heading">CONTROLS</div>
+          <div class="instruction-text">
+            Use left and right arrow keys (or A and D) to move your player.
+          </div>
+          <div class="controls-image">
+            <div class="control-key">←</div>
+            <div class="control-key">→</div>
+          </div>
+          <div class="instruction-text">
+            On mobile, tap the left or right side of the screen to move.
+          </div>
+        </div>
+        
+        <div class="instruction-section">
+          <div class="instruction-heading">POWER-UPS</div>
+          <div class="instruction-text">
+            Collect the pulsing green orbs to gain a temporary shield that protects you from one hammer hit.
+          </div>
+        </div>
+        
+        <div class="instruction-section">
+          <div class="instruction-heading">MILESTONES & REWARDS</div>
+          <div class="instruction-text">
+            Earn token rewards when you reach these score milestones:
+          </div>
+          <div class="milestone-list">
+            <div class="milestone-item">
+              <span>50 Points:</span>
+              <span>Bronze Hammer Token</span>
+            </div>
+            <div class="milestone-item">
+              <span>100 Points:</span>
+              <span>Silver Hammer Token</span>
+            </div>
+            <div class="milestone-item">
+              <span>200 Points:</span>
+              <span>Gold Hammer Token</span>
+            </div>
+            <div class="milestone-item">
+              <span>300 Points:</span>
+              <span>Platinum Hammer Token</span>
+            </div>
+            <div class="milestone-item">
+              <span>500 Points:</span>
+              <span>Diamond Hammer Token</span>
+            </div>
+            <div class="milestone-item">
+              <span>1000 Points:</span>
+              <span>Legendary Hammer Token</span>
+            </div>
+          </div>
+        </div>
+        
+        <button id="back-to-menu" class="button">BACK TO MENU</button>
+      </div>
+
+      <div id="game-over-screen">
+        <div class="game-over-title">GAME OVER</div>
+        <div class="final-score" id="final-score">SCORE: 0</div>
+        <button id="restart-button" class="button">PLAY AGAIN</button>
+        <button id="menu-button" class="button">BACK TO MENU</button>
+      </div>
+
+      <div id="loading-screen" class="loading-overlay">
+        <div class="spinner"></div>
+        <div class="loading-text">Loading...</div>
+      </div>
+
+      <!-- Milestone Modal -->
+      <div class="modal-overlay" id="milestone-modal">
+        <div class="modal">
+          <div class="modal-title" id="milestone-title">Milestone Reached!</div>
+          <div class="modal-content" id="milestone-content">
+            You've reached a new milestone and earned a token reward!
+          </div>
+          <div class="modal-buttons">
+            <button class="button" id="claim-token-button">CLAIM TOKEN</button>
+            <button class="button" id="continue-button">CONTINUE</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Token Success Modal -->
+      <div class="modal-overlay" id="token-success-modal">
+        <div class="modal">
+          <div class="modal-title">Token Claimed!</div>
+          <div class="modal-content">
+            <p>You have successfully claimed your token!</p>
+            <div class="token-info">
+              <div id="token-name"></div>
+              <div id="token-symbol"></div>
+              <div>Click to copy token address:</div>
+              <div class="token-address" id="token-address" onclick="copyToClipboard(this.textContent)"></div>
+            </div>
+          </div>
+          <div class="modal-buttons">
+            <button class="button" id="close-success-button">CONTINUE</button>
+          </div>
+        </div>
+      </div>
+    </div>
+</body> 
+</html>
