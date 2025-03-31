@@ -5,14 +5,13 @@
     "type": "module",
     "scripts": {
       "dev": "vite",
-      "build": "npx vite build",
+      "build": "vite build",
       "preview": "vite preview"
     },
     "dependencies": {
       "@zoralabs/coins-sdk": "^0.0.3",
-      "viem": "^2.24.2"
-    },
-    "devDependencies": {
+      "viem": "^2.24.2",
       "vite": "^5.1.0"
-    }
+    },
+    "devDependencies": {}
   }
